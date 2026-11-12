@@ -1,0 +1,28 @@
+/* Shared by the browser preview and HyperFrames at 1080 × 1920. */
+.thread-stage { container-type: inline-size; background: #050609; color: #111214; }
+.thread-grid, .thread-backdrop, .thread-shot, .thread-guides { position: absolute; inset: 0; width: 100%; height: 100%; }
+.thread-backdrop { object-fit: cover; }
+.thread-grid { stroke: #18283e; stroke-width: 4; fill: none; opacity: .72; mask-image: linear-gradient(transparent 5%, #000 24%, #000 43%, transparent 73%); }
+.thread-scrim { background: linear-gradient(#04060955 0%, #04060933 42%, #040609ba 76%, #050609 100%); }
+.thread-shot { display: flex; flex-direction: column; align-items: stretch; padding: 0 calc(10% - var(--card-x, 0%)) 22cqw calc(10% + var(--card-x, 0%)); pointer-events: none; }
+.thread-shot::before { content: ""; flex: 0 1 calc(var(--card-y, 22%) * 1.142857); min-height: 0; }
+.thread-shot .thread-card { flex: 0 0 auto; }
+.thread-card { width: 100%; background: #fff; color: #101114; padding: 2cqw 2.3cqw 1.65cqw; font-family: "Segoe UI", Arial, sans-serif; text-align: left; }
+.thread-header { display: flex; gap: 1.5cqw; align-items: center; font-size: 2.65cqw; line-height: 1.2; }
+.thread-header strong { min-width: 0; overflow-wrap: anywhere; }
+.thread-avatar { flex: 0 0 5.5cqw; width: 5.5cqw; aspect-ratio: 1; border-radius: 50%; background: #ededf0; position: relative; }
+.thread-avatar::after { content: "+"; position: absolute; right: -.35cqw; bottom: -.15cqw; display: grid; place-items: center; width: 2.5cqw; height: 2.5cqw; border: .25cqw solid #fff; border-radius: 50%; background: #111214; color: #fff; font: 700 1.85cqw/1 "Segoe UI", sans-serif; }
+.thread-logo { color: #747579; margin-left: auto; font-size: 3.4cqw; line-height: 1; }
+.thread-copy { color: #101114; margin: 1.15cqw 0 1.65cqw; font-size: 2.6cqw; font-weight: 400; line-height: 1.25; white-space: pre-wrap; overflow-wrap: anywhere; }
+.thread-card.dense .thread-copy { font-size: 2.35cqw; }
+.thread-actions, .thread-action { display: flex; align-items: center; }
+.thread-actions { gap: 3.2cqw; }
+.thread-action { gap: .65cqw; font-size: 2.23cqw; line-height: 1; color: #606168; }
+.thread-action svg { width: 2.85cqw; height: 2.85cqw; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.thread-action.thread-likes { color: #f33859; }
+.thread-action.thread-likes svg { fill: currentColor; }
+.thread-guides { pointer-events: none; font: 800 2.35cqw/1.1 "Segoe UI", sans-serif; color: #a6acb2a6; text-align: center; }
+.thread-guides::before, .thread-guides::after { position: absolute; left: 0; right: 0; height: 12.5%; display: grid; place-items: center; content: "NGOÀI VÙNG 3:4"; background: #05060966; }
+.thread-guides::before { top: 0; border-bottom: 1px dashed #b8c3d440; }
+.thread-guides::after { bottom: 0; border-top: 1px dashed #b8c3d440; }
+.thread-empty { position: absolute; inset: 36% 10% auto; color: #cbd3dc; text-align: center; font-size: 4.5cqw; }

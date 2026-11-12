@@ -1,0 +1,25 @@
+.follow-outro { position: absolute; inset: 0; overflow: hidden; color: #fafbf8; font-family: "Segoe UI", Arial, sans-serif; }
+.outro-still, .outro-blur, .outro-glass, .outro-shade { position: absolute; inset: 0; }
+.outro-still, .outro-blur { background: #050609; }
+.outro-still img, .outro-blur img { width: 100%; height: 100%; object-fit: cover; }
+.outro-blur { filter: blur(2.1cqw); transform: scale(1.08); opacity: 0; }
+.outro-glass { backdrop-filter: blur(2.1cqw); opacity: 0; }
+.outro-shade { background: linear-gradient(180deg, #06111522, #08140a30 43%, #08140aaf 100%); opacity: 0; }
+.follow-prompt { position: absolute; inset: 17% 9% auto; margin: 0; text-align: center; font-size: 5.15cqw; line-height: 1.2; font-weight: 850; letter-spacing: -.06cqw; text-shadow: 0 .55cqw 1.1cqw #08140ab3; opacity: 0; }
+.follow-card { position: absolute; inset: auto 5% 9%; height: 17.4cqw; display: flex; align-items: center; gap: 2.4cqw; padding: 1.35cqw 2.2cqw 1.35cqw 1.55cqw; border: .3cqw solid #f5fff522; border-radius: 99cqw; background: #131b13f2; box-shadow: 0 1.1cqw 3cqw #0005, inset 0 0 0 .16cqw #efffea12; opacity: 0; }
+.follow-avatar { display: grid; flex: 0 0 13.6cqw; height: 13.6cqw; place-items: center; background: #fbfffc; border-radius: 50%; border: .45cqw solid #e0ebe1; box-shadow: 0 0 .7cqw #f5fff580; }
+.follow-avatar img { display: block; width: 79%; height: auto; }
+.follow-account { flex: 1 1 auto; min-width: 0; position: relative; height: 9.4cqw; line-height: 1.15; }
+.follow-account strong { display: block; font-size: 4.35cqw; font-weight: 820; }
+.follow-handle, .follow-confirm { position: absolute; left: 0; top: 5.35cqw; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 3.35cqw; font-weight: 740; }
+.follow-handle { color: #c0c5be; }
+.follow-confirm { width: calc(100% + 10cqw); color: #79e3b5; opacity: 0; }
+.follow-action { flex: 0 0 26cqw; height: 11.9cqw; position: relative; }
+.follow-pill, .follow-round { position: absolute; inset: 0; border-radius: 99cqw; }
+.follow-pill { background: #fe2c55; transform-origin: right center; box-shadow: 0 0 2.2cqw #fe2c555e, inset .2cqw .4cqw 1.1cqw #fff5; }
+.follow-round { left: auto; width: 11.9cqw; opacity: 0; background: #fafffb; box-shadow: 0 .2cqw 1.1cqw #efffea60; }
+.follow-label { position: absolute; left: 3.15cqw; top: 3.45cqw; font-size: 4.35cqw; font-weight: 800; line-height: 1.1; }
+.follow-glyph { position: absolute; top: 3.2cqw; right: 1.55cqw; width: 5.5cqw; height: 5.5cqw; color: #fff; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.follow-tap, .follow-ripple { position: absolute; border-radius: 50%; pointer-events: none; opacity: 0; }
+.follow-tap { right: 1.7cqw; top: 2cqw; width: 8cqw; height: 8cqw; background: #ffffff56; border: .58cqw solid #fff; box-shadow: 0 0 1.7cqw #fe2c55bd; }
+.follow-ripple { right: -.05cqw; top: .05cqw; width: 11.8cqw; height: 11.8cqw; border: .4cqw solid #f9fff9; }

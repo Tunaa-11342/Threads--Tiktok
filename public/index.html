@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="vi" data-type="software">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-type" content="software">
+  <meta name="site-kind" content="software">
+  <title>Threads → TikTok</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/thread-card.css">
+  <link rel="stylesheet" href="/outro.css">
+  <script defer src="/gsap.min.js"></script>
+  <script type="module" src="/editor.js"></script>
+</head>
+<body>
+  <div class="studio">
+    <aside class="sidebar">
+      <div class="brand"><span class="mark" aria-hidden="true">↗</span><h1>Threads <span>→</span> TikTok</h1></div>
+      <div class="sidebar-content">
+        <button type="button" class="button accent new-video" id="new-video">＋ Tạo video mới</button>
+        <nav aria-label="Công cụ chỉnh video">
+          <button type="button" class="nav-button" data-open="source"><span class="nav-icon" aria-hidden="true">▤</span>Nguồn Threads</button>
+          <button type="button" class="nav-button" data-open="comments"><span class="nav-icon" aria-hidden="true">▱</span>Bình luận</button>
+          <button type="button" class="nav-button" data-open="voice"><span class="nav-icon" aria-hidden="true">≋</span>Lời đọc</button>
+          <button type="button" class="nav-button" data-open="media"><span class="nav-icon" aria-hidden="true">♫</span>Nhạc &amp; video nền</button>
+        </nav>
+      </div>
+    </aside>
+
+    <header class="topbar">
+      <div class="project-name"><span aria-hidden="true"></span><strong id="project-name">Video Threads</strong></div>
+      <div class="top-actions">
+        <span class="format">9:16</span>
+        <button type="button" class="button neutral" id="generate">▷ Phát thử</button>
+        <button type="button" class="button accent" id="export" disabled>Xuất MP4</button>
+      </div>
+    </header>
+
+    <main class="stage" aria-label="Khung xem video">
+      <nav class="scene-rail" aria-label="Cảnh video">
+        <button type="button" data-open="intro"><span aria-hidden="true">▷</span>Mở đầu</button>
+        <button type="button" data-open="body"><span aria-hidden="true">▣</span>Thân</button>
+        <button type="button" data-open="outro"><span aria-hidden="true">◎</span>Kết</button>
+      </nav>
+      <div class="stage-inner">
+        <div class="frame thread-stage">
+          <video id="player" controls playsinline preload="metadata" hidden></video>
+          <div id="placeholder">
+            <div id="grid-preview"></div>
+            <video id="background-preview" class="thread-backdrop" muted playsinline loop hidden></video>
+            <div id="preview-scrim" class="thread-backdrop thread-scrim" hidden></div>
+            <div id="preview-card" class="thread-shot" hidden></div>
+            <div id="frame-empty" class="thread-empty"><span aria-hidden="true">↗</span><strong>Chưa có nội dung</strong><p>Dán link Threads để bắt đầu.</p></div>
+            <div class="thread-guides" aria-hidden="true"></div>
+          </div>
+          <div id="outro-demo" hidden aria-hidden="true"></div>
+        </div>
+        <button type="button" class="button neutral stage-return" id="show-rendered" hidden>Xem clip đã dựng</button>
+      </div>
+    </main>
+
+    <aside class="inspector" aria-label="Bảng chỉnh sửa">
+      <section class="panel" data-panel="source" aria-labelledby="source-title">
+        <h2 id="source-title">Bài viết Threads</h2>
+        <form id="load-form">
+          <label for="thread-url">Link bài viết công khai</label>
+          <div class="inline">
+            <input id="thread-url" name="url" type="url" placeholder="https://www.threads.com/@ten/post/…" required>
+            <button class="button accent" id="load" type="submit">Lấy bài</button>
+          </div>
+        </form>
+        <p class="message" id="thread-message" role="status" hidden></p>
+        <div id="post-preview" class="post-preview" hidden></div>
+        <details id="manual">
+          <summary>Nhập bài hoặc bổ sung bình luận</summary>
+          <div class="manual-fields">
+            <label for="manual-post">Nội dung bài viết</label>
+            <textarea id="manual-post" rows="3" maxlength="5000"></textarea>
+            <label for="manual-comments">Bình luận</label>
+            <textarea id="manual-comments" rows="3" placeholder="Mỗi dòng một bình luận. Ví dụ: Hay quá | 12" maxlength="24000"></textarea>
+            <button class="button neutral" id="add-manual">Cập nhật nội dung</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="panel" data-panel="comments" aria-labelledby="comments-title" hidden>
+        <div class="heading"><h2 id="comments-title">Bình luận</h2><span class="meta" id="comment-total">0 đã lấy</span></div>
+        <div class="comment-tools">
+          <label class="sr-only" for="search">Lọc bình luận</label>
+          <input type="text" id="search" placeholder="Lọc bình luận">
+          <div class="sort">
+            <label class="sr-only" for="sort">Sắp xếp bình luận</label>
+            <select id="sort"><option value="likes">Nhiều tim</option><option value="source">Thứ tự bài gốc</option></select>
+          </div>
+        </div>
+        <p class="empty" id="empty-comments">Bình luận sẽ xuất hiện sau khi lấy bài hoặc nhập tay.</p>
+        <ul class="comment-list" id="comment-list" aria-label="Bình luận tìm được"></ul>
+        <div class="heading selection"><h3>Thứ tự lên video</h3><span class="meta" id="selected-total" role="status">0 / 4</span></div>
+        <ol class="selected-list" id="selected-list"></ol>
+      </section>
+
+      <section class="panel" data-panel="voice" aria-labelledby="script-title" hidden>
+        <div class="heading"><h2 id="script-title">Lời đọc</h2><span class="meta" id="voice-name">VieNeu-TTS</span></div>
+        <p class="empty" id="empty-script">Thêm bài viết để tạo lời đọc theo cảnh.</p>
+        <div id="script"></div>
+        <label class="check attribution"><input type="checkbox" id="authors"> Hiện tên tác giả trong thẻ video</label>
+      </section>
+
+      <section class="panel" data-panel="body" aria-labelledby="placement-title" hidden>
+        <h2 id="placement-title">Vị trí thẻ</h2>
+        <p class="empty" id="placement-empty">Thêm bài viết để chỉnh vị trí.</p>
+        <div id="placement" class="placement-controls" hidden>
+          <label for="placement-scene">Thẻ cần chỉnh</label>
+          <select id="placement-scene"></select>
+          <label for="card-x">Ngang <output id="card-x-value" for="card-x"></output></label>
+          <input id="card-x" type="range" min="-10" max="10">
+          <label for="card-y">Dọc <output id="card-y-value" for="card-y"></output></label>
+          <input id="card-y" type="range" min="13" max="78">
+          <button type="button" class="button neutral" id="placement-reset">Về vị trí mặc định</button>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="intro" aria-labelledby="intro-title" hidden>
+        <h2 id="intro-title">Mở đầu</h2>
+        <label for="effect">Âm thanh mở đầu</label>
+        <div class="inline">
+          <select id="effect"><option value="auto">Tự động</option></select>
+          <button type="button" class="button neutral" id="effects-refresh">Làm mới</button>
+        </div>
+        <p class="hint" id="effects-hint" role="status">Thả file vào thư mục Sound Effects.</p>
+      </section>
+
+      <section class="panel" data-panel="media" aria-labelledby="media-title" hidden>
+        <h2 id="media-title">Nhạc &amp; video nền</h2>
+        <label for="background">Video nền</label>
+        <input type="file" id="background" accept="video/*,.mkv,.mov,.mp4,.webm">
+        <p class="hint">Mặc định dùng nền lưới.</p>
+        <label for="music">Nhạc nền</label>
+        <div class="inline">
+          <select id="music"><option value="">Không dùng nhạc</option></select>
+          <button type="button" class="button neutral" id="music-refresh">Làm mới</button>
+        </div>
+        <p class="hint" id="music-hint" role="status">Thả file vào thư mục Nhạc nền.</p>
+      </section>
+
+      <section class="panel" data-panel="outro" aria-labelledby="outro-title" hidden>
+        <div class="heading"><h2 id="outro-title">Kết video</h2><span class="meta">3 giây</span></div>
+        <label class="check"><input type="checkbox" id="outro-enabled"> Thêm outro Follow</label>
+        <div class="fields">
+          <label for="outro-prompt">Câu dẫn</label><input id="outro-prompt" maxlength="110">
+          <label for="outro-name">Tên kênh</label><input id="outro-name" maxlength="24">
+          <label for="outro-handle">Tên tài khoản TikTok</label><input id="outro-handle" maxlength="32">
+          <label for="outro-button">Chữ nút</label><input id="outro-button" maxlength="10">
+          <label for="outro-confirm">Dòng sau khi bấm</label><input id="outro-confirm" maxlength="42">
+          <button class="button neutral" type="button" id="outro-play">Xem thử outro</button>
+        </div>
+      </section>
+    </aside>
+
+    <footer class="timeline">
+      <nav class="timeline-items" aria-label="Các phần của video">
+        <button type="button" class="timeline-card" data-open="intro"><span class="scene-thumb thumb-intro" aria-hidden="true">♫</span><span><strong>Mở đầu</strong><small id="intro-summary">Tự động</small></span></button>
+        <button type="button" class="timeline-card" data-open="source"><span class="scene-thumb thumb-post" aria-hidden="true"><i></i></span><span><strong>Bài viết</strong><small id="post-summary">Chưa có bài</small></span></button>
+        <button type="button" class="timeline-card" data-open="comments"><span class="scene-thumb thumb-comments" aria-hidden="true"><i></i><i></i></span><span><strong>Bình luận</strong><small id="comments-summary">0 bình luận</small></span></button>
+        <button type="button" class="timeline-card" data-open="outro"><span class="scene-thumb thumb-outro" aria-hidden="true"><i></i></span><span><strong>Kết video</strong><small id="outro-summary">@lapzone64</small></span></button>
+      </nav>
+      <div class="timeline-status"><p class="message" id="render-message" role="status" hidden></p><a class="download" id="download" hidden>Tải MP4</a></div>
+    </footer>
+  </div>
+</body>
+</html>
