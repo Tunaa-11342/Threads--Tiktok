@@ -37,7 +37,7 @@ h1 span { color: var(--muted); }
 .stage-inner { position: relative; min-width: 0; min-height: 0; display: grid; justify-items: center; align-items: center; }
 .scene-rail { position: absolute; z-index: 2; top: 15px; left: 14px; display: grid; gap: 4px; padding: 5px; background: #161616; border: 1px solid var(--line); border-radius: 10px; }
 .scene-rail button { display: grid; gap: 2px; align-content: center; min-width: 53px; min-height: 54px; background: transparent; border: 0; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 680; }
-.scene-rail button span { font-size: 16px; line-height: 1; }
+.scene-rail button span { font-size: 11px; line-height: 1.2; font-weight: 600; }
 .scene-rail button:hover { background: #292929; }
 .scene-rail button[aria-current="true"] { background: #eee; color: #161616; }
 .frame { height: 100%; max-height: 820px; max-width: 100%; aspect-ratio: 9/16; position: relative; overflow: hidden; border: 1px solid #373737; border-radius: 6px; background: #090d14; box-shadow: 0 12px 36px #0007; }
@@ -287,6 +287,10 @@ svg.lucide, i[data-lucide] {
   width: 1em;
   height: 1em;
   stroke-width: 2.2;
+}
+.mark svg.lucide {
+  width: 15px;
+  height: 15px;
 }
 .button svg.lucide, .button i[data-lucide] {
   width: 15px;

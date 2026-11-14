@@ -62,8 +62,16 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '64kb' }));
 app.use(express.static(path.join(root, 'public')));
-app.get('/gsap.min.js', (_req, res) => res.sendFile(path.join(root, 'node_modules', 'gsap', 'dist', 'gsap.min.js')));
-app.get('/lucide.min.js', (_req, res) => res.sendFile(path.join(root, 'node_modules', 'lucide', 'dist', 'umd', 'lucide.min.js')));
+app.get('/gsap.min.js', (_req, res) => {
+  const pub = path.join(root, 'public', 'gsap.min.js');
+  if (existsSync(pub)) return res.sendFile(pub);
+  return res.sendFile(path.join(root, 'node_modules', 'gsap', 'dist', 'gsap.min.js'));
+});
+app.get('/lucide.min.js', (_req, res) => {
+  const pub = path.join(root, 'public', 'lucide.min.js');
+  if (existsSync(pub)) return res.sendFile(pub);
+  return res.sendFile(path.join(root, 'node_modules', 'lucide', 'dist', 'umd', 'lucide.min.js'));
+});
 
 // Static media access
 app.use('/media/music', express.static(musicFolder));

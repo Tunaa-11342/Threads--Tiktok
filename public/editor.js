@@ -62,8 +62,12 @@ function getOutroAvatarUrl(avatar) {
 }
 
 function refreshIcons() {
-  if (window.lucide) {
-    window.lucide.createIcons();
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    try {
+      window.lucide.createIcons();
+    } catch (e) {
+      console.warn('lucide createIcons:', e);
+    }
   }
 }
 
@@ -1731,3 +1735,9 @@ updateTimeline();
 updateEstimatedDuration();
 openPanel(draft.panel || 'source');
 refreshIcons();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', refreshIcons);
+}
+window.addEventListener('load', refreshIcons);
+setTimeout(refreshIcons, 100);
+setTimeout(refreshIcons, 500);
