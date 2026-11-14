@@ -21,7 +21,7 @@ const reactions = {
 const variants = ['spring', 'down', 'game'];
 const lead = 0.02;
 const tail = 0.13;
-const maxEffectSeconds = 4;
+const maxEffectSeconds = 12;
 
 function builtIn(mode, index) {
   if (mode === 'off') return null;
@@ -84,6 +84,14 @@ export async function mixAudio(folder, plan, music, command) {
   for (const [index, scene] of plan.scenes.entries()) {
     files.push('speech-' + index + '.wav');
     await appendEffect(scene.reaction, 'effect-' + index + '.wav');
+    const reactionDur = scene.reaction?.duration ?? 0;
+    const holdDiff = (scene.extraHold ?? 0) - reactionDur;
+    if (holdDiff > 0.05) {
+      const silenceName = 'hold-' + index + '.wav';
+      const source = "aevalsrc=0:s=" + rate + ':d=' + holdDiff.toFixed(3);
+      await command('ffmpeg', [...ffmpeg, '-f', 'lavfi', '-i', source, '-c:a', 'pcm_s16le', silenceName], { cwd: folder });
+      files.push(silenceName);
+    }
   }
 
   if (plan.outro) {
@@ -111,4 +119,14 @@ export async function mixAudio(folder, plan, music, command) {
     '[music];[voice][music]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.94:level=false[audio]';
   await command('ffmpeg', [...ffmpeg, ...speech, '-stream_loop', '-1', '-i', music,
     '-filter_complex', filter, '-map', '[audio]', ...output], { cwd: folder });
+}
+
+
+export async function renderBuiltinEffect(variant, destFile, command) {
+  const chosenVariant = variant === 'ting' ? 'ting' : variants.includes(variant) ? variant : 'ting';
+  const duration = chosenVariant === 'ting' ? 0.44 : 0.68;
+  const notes = [effects.ting, effects.bell, ...(reactions[chosenVariant] || [])];
+  const source = "aevalsrc='" + notes.map(waveform).join('+') + "':s=" + rate + ':d=' + duration;
+  await command('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', source, '-c:a', 'pcm_s16le', destFile]);
+  return destFile;
 }

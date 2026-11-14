@@ -154,3 +154,310 @@ summary { color: #c5c5c5; cursor: pointer; min-height: 32px; }
   .project-name { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Audio preview buttons */
+.btn-preview-audio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #262626;
+  border: 1px solid #444;
+  cursor: pointer;
+  font-size: 12px;
+  color: #ddd;
+  transition: all 0.15s ease;
+}
+.btn-preview-audio:hover {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+.btn-preview-audio.playing {
+  background: #d6f66f;
+  color: #121212;
+  border-color: #d6f66f;
+}
+
+/* Resource Manager */
+.resource-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.resource-box h3 {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e5e5;
+}
+.meme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.meme-item {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.meme-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.meme-item:hover, .meme-item.selected {
+  border-color: #d6f66f;
+  box-shadow: 0 0 8px rgba(214, 246, 111, 0.4);
+}
+
+/* Validation error box */
+.validation-error {
+  background: #2d1210;
+  border: 1px solid #ff6b57;
+  color: #ffb8a7;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+/* Stage controls */
+.stage-live-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 18, 18, 0.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 6px 14px;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.stage-live-bar button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.stage-live-bar button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.stage-live-bar .time-display {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lucide Icons */
+svg.lucide, i[data-lucide] {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1em;
+  stroke-width: 2.2;
+}
+.button svg.lucide, .button i[data-lucide] {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.btn-preview-audio svg.lucide, .btn-preview-audio i[data-lucide] {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.scene-rail button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.scene-rail button svg.lucide {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 2px;
+}
+.empty-icon {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 10px;
+  color: #666;
+  display: block;
+}
+
+/* Duration badge */
+.duration-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1c1c1c;
+  border: 1px solid #333;
+  color: #d6f66f;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+}
+.duration-badge svg.lucide {
+  width: 13px;
+  height: 13px;
+  color: #888;
+}
+
+/* Background offset container */
+.bg-offset-container {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #181818;
+  border: 1px solid #282828;
+  border-radius: 8px;
+}
+.bg-offset-container label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #eee;
+}
+.bg-offset-container .meta {
+  color: #888;
+  font-size: 11px;
+}
+
+/* Sound Effect library grid */
+.effect-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.effect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1e1e1e;
+  border: 1px solid #2d2d2d;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #ddd;
+}
+.effect-chip .chip-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.effect-chip button {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+.effect-chip button:hover {
+  color: #d6f66f;
+}
+.effect-chip.playing {
+  border-color: #d6f66f;
+  background: #252e18;
+  color: #d6f66f;
+}
+
+/* Outro Avatar Picker */
+.outro-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+.outro-avatar-preview-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: #18191c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.outro-avatar-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Meme item video support */
+.meme-item {
+  position: relative;
+}
+.meme-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.meme-item .video-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #d6f66f;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.meme-item .video-badge svg {
+  width: 12px;
+  height: 12px;
+}

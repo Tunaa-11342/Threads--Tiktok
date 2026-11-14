@@ -10,19 +10,22 @@
   <link rel="stylesheet" href="/thread-card.css">
   <link rel="stylesheet" href="/outro.css">
   <script defer src="/gsap.min.js"></script>
+  <script defer src="/lucide.min.js"></script>
   <script type="module" src="/editor.js"></script>
 </head>
 <body>
   <div class="studio">
     <aside class="sidebar">
-      <div class="brand"><span class="mark" aria-hidden="true">↗</span><h1>Threads <span>→</span> TikTok</h1></div>
+      <div class="brand"><span class="mark" aria-hidden="true"><i data-lucide="sparkles"></i></span><h1>Threads <span>→</span> TikTok</h1></div>
       <div class="sidebar-content">
-        <button type="button" class="button accent new-video" id="new-video">＋ Tạo video mới</button>
+        <button type="button" class="button accent new-video" id="new-video"><i data-lucide="plus-circle"></i> Tạo video mới</button>
         <nav aria-label="Công cụ chỉnh video">
-          <button type="button" class="nav-button" data-open="source"><span class="nav-icon" aria-hidden="true">▤</span>Nguồn Threads</button>
-          <button type="button" class="nav-button" data-open="comments"><span class="nav-icon" aria-hidden="true">▱</span>Bình luận</button>
-          <button type="button" class="nav-button" data-open="voice"><span class="nav-icon" aria-hidden="true">≋</span>Lời đọc</button>
-          <button type="button" class="nav-button" data-open="media"><span class="nav-icon" aria-hidden="true">♫</span>Nhạc &amp; video nền</button>
+          <button type="button" class="nav-button" data-open="source"><span class="nav-icon" aria-hidden="true"><i data-lucide="at-sign"></i></span>Nguồn Threads</button>
+          <button type="button" class="nav-button" data-open="comments"><span class="nav-icon" aria-hidden="true"><i data-lucide="message-square"></i></span>Bình luận</button>
+          <button type="button" class="nav-button" data-open="voice"><span class="nav-icon" aria-hidden="true"><i data-lucide="mic"></i></span>Lời đọc</button>
+          <button type="button" class="nav-button" data-open="body"><span class="nav-icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span>Vị trí &amp; Meme</button>
+          <button type="button" class="nav-button" data-open="captions"><span class="nav-icon" aria-hidden="true"><i data-lucide="subtitles"></i></span>Phụ đề TikTok</button>
+          <button type="button" class="nav-button" data-open="media"><span class="nav-icon" aria-hidden="true"><i data-lucide="folder-archive"></i></span>Kho tài nguyên</button>
         </nav>
       </div>
     </aside>
@@ -30,17 +33,18 @@
     <header class="topbar">
       <div class="project-name"><span aria-hidden="true"></span><strong id="project-name">Video Threads</strong></div>
       <div class="top-actions">
+        <span class="duration-badge" id="video-duration" title="Ước tính thời lượng video"><i data-lucide="clock"></i> <span id="duration-val">~00:00</span></span>
         <span class="format">9:16</span>
-        <button type="button" class="button neutral" id="generate">▷ Phát thử</button>
-        <button type="button" class="button accent" id="export" disabled>Xuất MP4</button>
+        <button type="button" class="button neutral" id="generate" title="Xem trước đồng bộ thời gian thực"><i data-lucide="play"></i> <span>Phát thử (Live)</span></button>
+        <button type="button" class="button accent" id="export" title="Render toàn bộ video MP4 1080x1920"><i data-lucide="film"></i> <span>Xuất MP4</span></button>
       </div>
     </header>
 
     <main class="stage" aria-label="Khung xem video">
       <nav class="scene-rail" aria-label="Cảnh video">
-        <button type="button" data-open="intro"><span aria-hidden="true">▷</span>Mở đầu</button>
-        <button type="button" data-open="body"><span aria-hidden="true">▣</span>Thân</button>
-        <button type="button" data-open="outro"><span aria-hidden="true">◎</span>Kết</button>
+        <button type="button" data-open="intro"><i data-lucide="sparkles"></i><span>Mở đầu</span></button>
+        <button type="button" data-open="body"><i data-lucide="layers"></i><span>Thân</span></button>
+        <button type="button" data-open="outro"><i data-lucide="check-circle-2"></i><span>Kết</span></button>
       </nav>
       <div class="stage-inner">
         <div class="frame thread-stage">
@@ -50,16 +54,19 @@
             <video id="background-preview" class="thread-backdrop" muted playsinline loop hidden></video>
             <div id="preview-scrim" class="thread-backdrop thread-scrim" hidden></div>
             <div id="preview-card" class="thread-shot" hidden></div>
-            <div id="frame-empty" class="thread-empty"><span aria-hidden="true">↗</span><strong>Chưa có nội dung</strong><p>Dán link Threads để bắt đầu.</p></div>
+            <div id="preview-meme" class="thread-meme" hidden></div>
+            <div id="preview-captions" hidden></div>
+            <div id="frame-empty" class="thread-empty"><i data-lucide="inbox" class="empty-icon"></i><strong>Chưa có nội dung</strong><p>Dán link Threads để bắt đầu.</p></div>
             <div class="thread-guides" aria-hidden="true"></div>
           </div>
           <div id="outro-demo" hidden aria-hidden="true"></div>
         </div>
-        <button type="button" class="button neutral stage-return" id="show-rendered" hidden>Xem clip đã dựng</button>
+        <button type="button" class="button neutral stage-return" id="show-rendered" hidden><i data-lucide="play-square"></i> Xem clip đã dựng</button>
       </div>
     </main>
 
     <aside class="inspector" aria-label="Bảng chỉnh sửa">
+      <!-- PANEL: NGUỒN THREADS -->
       <section class="panel" data-panel="source" aria-labelledby="source-title">
         <h2 id="source-title">Bài viết Threads</h2>
         <form id="load-form">
@@ -76,13 +83,16 @@
           <div class="manual-fields">
             <label for="manual-post">Nội dung bài viết</label>
             <textarea id="manual-post" rows="3" maxlength="5000"></textarea>
-            <label for="manual-comments">Bình luận</label>
-            <textarea id="manual-comments" rows="3" placeholder="Mỗi dòng một bình luận. Ví dụ: Hay quá | 12" maxlength="24000"></textarea>
-            <button class="button neutral" id="add-manual">Cập nhật nội dung</button>
+            
+            <label for="manual-comments">Bình luận thủ công (Format: [Tên user] Nội dung comment)</label>
+            <textarea id="manual-comments" rows="4" placeholder="[jstnzp.wav] hôm nay trời đẹp quá | 15&#10;[lan_anh] thật tuyệt vời&#10;Mỗi dòng một bình luận." maxlength="24000"></textarea>
+            <div id="manual-error" class="validation-error" hidden></div>
+            <button class="button neutral" id="add-manual" type="button">Cập nhật nội dung</button>
           </div>
         </details>
       </section>
 
+      <!-- PANEL: BÌNH LUẬN -->
       <section class="panel" data-panel="comments" aria-labelledby="comments-title" hidden>
         <div class="heading"><h2 id="comments-title">Bình luận</h2><span class="meta" id="comment-total">0 đã lấy</span></div>
         <div class="comment-tools">
@@ -99,6 +109,7 @@
         <ol class="selected-list" id="selected-list"></ol>
       </section>
 
+      <!-- PANEL: LỜI ĐỌC -->
       <section class="panel" data-panel="voice" aria-labelledby="script-title" hidden>
         <div class="heading"><h2 id="script-title">Lời đọc</h2><span class="meta" id="voice-name">VieNeu-TTS</span></div>
         <p class="empty" id="empty-script">Thêm bài viết để tạo lời đọc theo cảnh.</p>
@@ -106,53 +117,170 @@
         <label class="check attribution"><input type="checkbox" id="authors"> Hiện tên tác giả trong thẻ video</label>
       </section>
 
+      <!-- PANEL: VỊ TRÍ & MEME -->
       <section class="panel" data-panel="body" aria-labelledby="placement-title" hidden>
-        <h2 id="placement-title">Vị trí thẻ</h2>
-        <p class="empty" id="placement-empty">Thêm bài viết để chỉnh vị trí.</p>
+        <h2 id="placement-title">Vị trí &amp; Meme</h2>
+        <p class="empty" id="placement-empty">Thêm bài viết để chỉnh vị trí và chèn meme.</p>
         <div id="placement" class="placement-controls" hidden>
-          <label for="placement-scene">Thẻ cần chỉnh</label>
+          <label for="placement-scene">Cảnh đang chỉnh</label>
           <select id="placement-scene"></select>
-          <label for="card-x">Ngang <output id="card-x-value" for="card-x"></output></label>
+
+          <h3>Vị trí thẻ Threads</h3>
+          <label for="card-x">Ngang thẻ <output id="card-x-value" for="card-x"></output></label>
           <input id="card-x" type="range" min="-10" max="10">
-          <label for="card-y">Dọc <output id="card-y-value" for="card-y"></output></label>
+          <label for="card-y">Dọc thẻ <output id="card-y-value" for="card-y"></output></label>
           <input id="card-y" type="range" min="13" max="78">
-          <button type="button" class="button neutral" id="placement-reset">Về vị trí mặc định</button>
+          <button type="button" class="button neutral" id="placement-reset"><i data-lucide="rotate-ccw"></i> <span>Về vị trí thẻ mặc định</span></button>
+
+          <hr style="border:0; border-top:1px solid var(--line); margin:14px 0;">
+
+          <h3>Meme cho cảnh này (Ảnh, GIF, Video)</h3>
+          <label for="scene-meme-select">Chọn Meme</label>
+          <div class="inline">
+            <select id="scene-meme-select"><option value="">Không chèn meme</option></select>
+            <button type="button" class="button neutral" id="btn-add-meme-scene"><i data-lucide="upload"></i> <span>Tải meme</span></button>
+            <input type="file" id="meme-file-input-scene" accept="image/*,video/*,.gif,.mp4,.webm,.mov" hidden>
+          </div>
+
+          <div id="scene-meme-controls" hidden>
+            <label for="meme-timing">Thời điểm hiển thị meme</label>
+            <select id="meme-timing">
+              <option value="with_card">Cùng lúc với nội dung thẻ (mặc định)</option>
+              <option value="after_read">Sau khi đọc xong (cùng hiệu ứng âm thanh)</option>
+            </select>
+
+            <label for="meme-x">Vị trí Ngang Meme <output id="meme-x-value" for="meme-x"></output></label>
+            <input id="meme-x" type="range" min="5" max="95" value="50">
+
+            <label for="meme-y">Vị trí Dọc Meme <output id="meme-y-value" for="meme-y"></output></label>
+            <input id="meme-y" type="range" min="10" max="90" value="62">
+
+            <label for="meme-scale">Kích thước Meme <output id="meme-scale-value" for="meme-scale"></output></label>
+            <input id="meme-scale" type="range" min="30" max="250" value="100">
+
+            <button type="button" class="button neutral" id="btn-remove-meme"><i data-lucide="trash-2"></i> <span>Xóa meme khỏi cảnh này</span></button>
+            <p class="hint">💡 <strong>Mẹo:</strong> Bạn có thể nhấp trực tiếp vào meme trên khung video để kéo thả hoặc kéo góc để đổi kích thước!</p>
+          </div>
         </div>
       </section>
 
+      <!-- PANEL: PHỤ ĐỀ TIKTOK -->
+      <section class="panel" data-panel="captions" aria-labelledby="captions-title" hidden>
+        <div class="heading"><h2 id="captions-title">Phụ đề TikTok</h2></div>
+        <label class="check"><input type="checkbox" id="captions-enabled" checked> Bật phụ đề nhảy từng chữ (Karaoke Style)</label>
+
+        <div class="fields" id="captions-settings">
+          <label for="captions-font">Phông chữ phụ đề</label>
+          <div class="inline">
+            <select id="captions-font"></select>
+            <button type="button" class="button neutral" id="btn-add-font" title="Thêm font .ttf, .otf, .woff, .woff2"><i data-lucide="plus"></i> <span>Thêm font</span></button>
+            <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" hidden>
+          </div>
+
+          <label for="captions-words">Số từ trên một dòng <output id="captions-words-value" for="captions-words">7 từ</output></label>
+          <input id="captions-words" type="range" min="3" max="12" value="7">
+          <p class="hint">Khuyến nghị 6–8 từ/dòng để hiển thị đẹp nhất trên màn hình dọc TikTok.</p>
+
+          <label for="captions-y">Vị trí Dọc Y <output id="captions-y-value" for="captions-y">75%</output></label>
+          <input id="captions-y" type="range" min="50" max="88" value="75">
+          <p class="hint">Vị trí 70%–78% nằm ngay dưới thẻ bài viết và an toàn khỏi các nút tương tác của TikTok.</p>
+        </div>
+      </section>
+
+      <!-- PANEL: MỞ ĐẦU -->
       <section class="panel" data-panel="intro" aria-labelledby="intro-title" hidden>
         <h2 id="intro-title">Mở đầu</h2>
         <label for="effect">Âm thanh mở đầu</label>
         <div class="inline">
           <select id="effect"><option value="auto">Tự động</option></select>
-          <button type="button" class="button neutral" id="effects-refresh">Làm mới</button>
+          <button type="button" class="btn-preview-audio" id="btn-preview-intro-effect" title="Nghe thử âm thanh"><i data-lucide="volume-2"></i> <span>Nghe</span></button>
+          <button type="button" class="button neutral" id="effects-refresh"><i data-lucide="refresh-cw"></i> <span>Làm mới</span></button>
         </div>
         <p class="hint" id="effects-hint" role="status">Thả file vào thư mục Sound Effects.</p>
       </section>
 
+      <!-- PANEL: KHO TÀI NGUYÊN (MEDIA) -->
       <section class="panel" data-panel="media" aria-labelledby="media-title" hidden>
-        <h2 id="media-title">Nhạc &amp; video nền</h2>
-        <label for="background">Video nền</label>
-        <input type="file" id="background" accept="video/*,.mkv,.mov,.mp4,.webm">
-        <p class="hint">Mặc định dùng nền lưới.</p>
-        <label for="music">Nhạc nền</label>
-        <div class="inline">
-          <select id="music"><option value="">Không dùng nhạc</option></select>
-          <button type="button" class="button neutral" id="music-refresh">Làm mới</button>
+        <h2 id="media-title">Kho tài nguyên</h2>
+
+        <!-- Khối Video nền -->
+        <div class="resource-box">
+          <div class="heading"><h3>Video nền</h3><span class="meta" id="bg-count">0 video</span></div>
+          <div class="inline">
+            <select id="bg-select"><option value="">Nền lưới mặc định</option></select>
+            <button type="button" class="button accent" id="bg-upload-btn"><i data-lucide="plus"></i> <span>Thêm video</span></button>
+            <input type="file" id="bg-file-input" accept="video/*,.mkv,.mov,.mp4,.webm" hidden>
+          </div>
+          <div id="bg-offset-box" class="bg-offset-container" hidden>
+            <label for="bg-start-slider"><span>Điểm bắt đầu: <strong id="bg-start-label">00:00</strong></span> <span class="meta" id="bg-duration-label">(Tổng: 00:00)</span></label>
+            <div class="inline">
+              <input id="bg-start-slider" type="range" min="0" max="100" value="0" step="1">
+              <button type="button" class="button neutral" id="bg-random-btn" title="Chọn ngẫu nhiên điểm bắt đầu để không trùng lặp các video"><i data-lucide="shuffle"></i> <span>Ngẫu nhiên</span></button>
+              <button type="button" class="button neutral" id="bg-reset-btn" title="Về đầu video 00:00"><i data-lucide="rotate-ccw"></i></button>
+            </div>
+            <p class="hint">Cắt video nền từ thời điểm đã chọn để mỗi video tạo ra có cảnh nền khác nhau.</p>
+          </div>
+          <p class="hint">Video được lưu vào thư mục <strong>Video nền</strong> trên máy.</p>
         </div>
-        <p class="hint" id="music-hint" role="status">Thả file vào thư mục Nhạc nền.</p>
+
+        <!-- Khối Meme -->
+        <div class="resource-box">
+          <div class="heading"><h3>Kho Meme (Ảnh, GIF, Video)</h3><span class="meta" id="meme-count">0 meme</span></div>
+          <div class="inline">
+            <button type="button" class="button accent" id="meme-lib-upload-btn"><i data-lucide="plus"></i> <span>Thêm Meme mới</span></button>
+            <input type="file" id="meme-lib-file-input" accept="image/*,video/*,.gif,.mp4,.webm,.mov" hidden>
+            <button type="button" class="button neutral" id="meme-refresh"><i data-lucide="refresh-cw"></i> <span>Làm mới</span></button>
+          </div>
+          <div class="meme-grid" id="meme-library-grid"></div>
+          <p class="hint">Meme được lưu trong thư mục <strong>Memes</strong> (hỗ trợ ảnh tĩnh, ảnh động GIF và Video MP4/WebM).</p>
+        </div>
+
+        <!-- Khối Sound Effects -->
+        <div class="resource-box">
+          <div class="heading"><h3>Hiệu ứng âm thanh (Sound Effects)</h3><span class="meta" id="effects-lib-count">0 hiệu ứng</span></div>
+          <div class="inline">
+            <button type="button" class="button accent" id="effect-upload-btn"><i data-lucide="plus"></i> <span>Thêm Sound Effect</span></button>
+            <input type="file" id="effect-file-input" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac" hidden>
+            <button type="button" class="button neutral" id="effects-lib-refresh"><i data-lucide="refresh-cw"></i> <span>Làm mới</span></button>
+          </div>
+          <div class="effect-grid" id="effects-library-grid"></div>
+          <p class="hint">File âm thanh được lưu trong thư mục <strong>Sound Effects</strong>.</p>
+        </div>
+
+        <!-- Khối Nhạc nền -->
+        <div class="resource-box">
+          <div class="heading"><h3>Nhạc nền</h3></div>
+          <div class="inline">
+            <select id="music"><option value="">Không dùng nhạc</option></select>
+            <button type="button" class="btn-preview-audio" id="btn-preview-music" title="Nghe thử bài nhạc"><i data-lucide="volume-2"></i> <span>Nghe</span></button>
+            <button type="button" class="button neutral" id="music-refresh"><i data-lucide="refresh-cw"></i> <span>Làm mới</span></button>
+          </div>
+          <p class="hint" id="music-hint" role="status">Thả file vào thư mục Nhạc nền.</p>
+        </div>
       </section>
 
+      <!-- PANEL: KẾT VIDEO (OUTRO) -->
       <section class="panel" data-panel="outro" aria-labelledby="outro-title" hidden>
         <div class="heading"><h2 id="outro-title">Kết video</h2><span class="meta">3 giây</span></div>
-        <label class="check"><input type="checkbox" id="outro-enabled"> Thêm outro Follow</label>
+        <label class="check"><input type="checkbox" id="outro-enabled" checked> Thêm outro Follow</label>
+        <label class="check" id="outro-blur-wrap"><input type="checkbox" id="outro-blur-bg" checked> Tiếp tục chạy video nền và làm mờ (Tắt = sử dụng nền đen)</label>
         <div class="fields">
+          <label>Ảnh đại diện (Avatar outro)</label>
+          <div class="inline outro-avatar-row">
+            <div class="outro-avatar-preview-box">
+              <img id="outro-avatar-preview" src="lapzone-logo.svg" alt="Avatar">
+            </div>
+            <button type="button" class="button neutral" id="outro-avatar-btn"><i data-lucide="upload"></i> <span>Đổi ảnh</span></button>
+            <button type="button" class="button neutral" id="outro-avatar-reset" title="Đặt lại ảnh LapZone mặc định"><i data-lucide="rotate-ccw"></i></button>
+            <input type="file" id="outro-avatar-input" accept="image/*" hidden>
+          </div>
+
           <label for="outro-prompt">Câu dẫn</label><input id="outro-prompt" maxlength="110">
           <label for="outro-name">Tên kênh</label><input id="outro-name" maxlength="24">
           <label for="outro-handle">Tên tài khoản TikTok</label><input id="outro-handle" maxlength="32">
           <label for="outro-button">Chữ nút</label><input id="outro-button" maxlength="10">
           <label for="outro-confirm">Dòng sau khi bấm</label><input id="outro-confirm" maxlength="42">
-          <button class="button neutral" type="button" id="outro-play">Xem thử outro</button>
+          <button class="button neutral" type="button" id="outro-play"><i data-lucide="play"></i> <span>Xem thử outro</span></button>
         </div>
       </section>
     </aside>

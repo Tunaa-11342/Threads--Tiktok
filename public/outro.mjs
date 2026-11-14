@@ -2,28 +2,39 @@ import { escape, gridMarkup } from './thread-card.mjs';
 
 export const outroDuration = 3;
 export const defaultOutro = {
-  enabled: true, handle: '@lapzone64', name: 'LapZone', button: 'Follow',
+  enabled: true, blurBackground: true, handle: '@lapzone64', name: 'LapZone', button: 'Follow',
+  avatar: 'lapzone-logo.svg',
   prompt: 'Follow để không lỡ phần tiếp theo nha!',
   confirm: 'Đã theo dõi · cảm ơn bạn',
 };
 
 export function normalizeOutro(settings) {
-  const limit = { handle: 32, name: 24, button: 10, prompt: 110, confirm: 42 };
+  const limit = { handle: 32, name: 24, button: 10, prompt: 110, confirm: 42, avatar: 256 };
   const fields = Object.entries(limit).map(([key, size]) => [
-    key, (typeof settings?.[key] === 'string' && settings[key].trim().slice(0, size)) || defaultOutro[key],
+    key, (typeof settings?.[key] === 'string' && settings[key].trim().slice(0, size)) || defaultOutro[key] || '',
   ]);
-  return { enabled: settings?.enabled !== false, ...Object.fromEntries(fields) };
+  return {
+    enabled: settings?.enabled !== false,
+    blurBackground: settings?.blurBackground !== false,
+    ...Object.fromEntries(fields)
+  };
 }
 
-export function outroMarkup(settings, { timing = '', freeze = null } = {}) {
-  const { handle, name, button, prompt, confirm } = normalizeOutro(settings);
-  const still = freeze ? '<img src="' + freeze + '" alt="">' : gridMarkup;
-  const backdrop = freeze === false
-    ? '<div class="outro-glass"></div>'
-    : '<div class="outro-still">' + still + '</div><div class="outro-blur">' + still + '</div>';
+export function outroMarkup(settings, { timing = '', freeze = null, blurBackground = (settings?.blurBackground !== false), avatarUrl = '' } = {}) {
+  const { handle, name, button, prompt, confirm, avatar } = normalizeOutro(settings);
+  const displayAvatar = avatarUrl || avatar || 'lapzone-logo.svg';
+  let backdrop;
+  if (blurBackground) {
+    backdrop = '<div class="outro-glass"></div>';
+  } else if (freeze) {
+    const still = '<img src="' + freeze + '" alt="">';
+    backdrop = '<div class="outro-still">' + still + '</div><div class="outro-blur">' + still + '</div>';
+  } else {
+    backdrop = '<div class="outro-black"></div>';
+  }
   return '<section class="clip follow-outro"' + timing + '>' + backdrop + '<div class="outro-shade"></div>' +
     '<p class="follow-prompt">' + escape(prompt) + '</p>' +
-    '<div class="follow-card"><span class="follow-avatar"><img src="lapzone-logo.svg" alt=""></span>' +
+    '<div class="follow-card"><span class="follow-avatar"><img src="' + escape(displayAvatar) + '" alt=""></span>' +
     '<div class="follow-account"><strong>' + escape(name) + '</strong><span class="follow-handle">' + escape(handle) + '</span>' +
     '<span class="follow-confirm">' + escape(confirm) + '</span></div>' +
     '<div class="follow-action"><span class="follow-pill"></span><span class="follow-round"></span>' +
@@ -36,8 +47,8 @@ export function outroMarkup(settings, { timing = '', freeze = null } = {}) {
 export function addOutroAnimation(tl, root, start) {
   const target = name => root.querySelector('.' + name);
   const click = start + 1.07;
-  const blur = target('outro-blur') || target('outro-glass');
-  tl.fromTo(blur, { opacity: 0 }, { opacity: 1, duration: .48, ease: 'power2.out' }, start);
+  const blur = target('outro-blur') || target('outro-glass') || target('outro-black');
+  if (blur) tl.fromTo(blur, { opacity: 0 }, { opacity: 1, duration: .48, ease: 'power2.out' }, start);
   tl.fromTo(target('outro-shade'), { opacity: 0 }, { opacity: 1, duration: .42 }, start);
   tl.fromTo(target('follow-prompt'), { opacity: 0, yPercent: 22 },
     { opacity: 1, yPercent: 0, duration: .42, ease: 'power3.out' }, start + .16);

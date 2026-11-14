@@ -1,3 +1,18 @@
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-weight: 700 800;
+  src: url('/fonts/BeVietnamPro-Bold.ttf') format('truetype'),
+       url('BeVietnamPro-Bold.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-weight: 900;
+  src: url('/fonts/BeVietnamPro-Black.ttf') format('truetype'),
+       url('BeVietnamPro-Black.ttf') format('truetype');
+  font-display: swap;
+}
+
 /* Shared by the browser preview and HyperFrames at 1080 × 1920. */
 .thread-stage { container-type: inline-size; background: #050609; color: #111214; }
 .thread-grid, .thread-backdrop, .thread-shot, .thread-guides { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -26,3 +41,79 @@
 .thread-guides::before { top: 0; border-bottom: 1px dashed #b8c3d440; }
 .thread-guides::after { bottom: 0; border-top: 1px dashed #b8c3d440; }
 .thread-empty { position: absolute; inset: 36% 10% auto; color: #cbd3dc; text-align: center; font-size: 4.5cqw; }
+
+/* Memes */
+.thread-meme {
+  position: absolute;
+  left: var(--meme-x, 50%);
+  top: var(--meme-y, 62%);
+  transform: translate(-50%, -50%) scale(var(--meme-scale, 1)) rotate(var(--meme-rot, 0deg));
+  transform-origin: center center;
+  z-index: 5;
+  pointer-events: auto;
+  user-select: none;
+}
+.thread-meme img,
+.thread-meme video,
+video.thread-meme {
+  display: block;
+  max-width: 45cqw;
+  max-height: 45cqw;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 0.8cqw 2.4cqw rgba(0, 0, 0, 0.5));
+  border-radius: 12px;
+}
+.thread-meme.active-meme {
+  outline: 2px dashed #d6f66f;
+  outline-offset: 4px;
+}
+.meme-resize-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #d6f66f;
+  border: 2px solid #13161c;
+  border-radius: 50%;
+  bottom: -10px;
+  right: -10px;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+
+/* TikTok Captions */
+.tiktok-captions-container {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: var(--captions-y, 75%);
+  transform: translateY(-50%);
+  z-index: 6;
+  text-align: center;
+  pointer-events: none;
+}
+.tiktok-caption-line {
+  display: inline-block;
+  font-family: var(--captions-font, 'Be Vietnam Pro'), -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-weight: 900;
+  font-size: 4.6cqw;
+  line-height: 1.28;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05cqw;
+  text-align: center;
+  -webkit-text-stroke: 0.35cqw #000000;
+  paint-order: stroke fill;
+  filter: drop-shadow(0 0.35cqw 1.2cqw rgba(0, 0, 0, 0.88));
+}
+.tiktok-word {
+  display: inline-block;
+  transform-origin: center center;
+  margin: 0 0.35cqw;
+}
+.tiktok-word.active {
+  color: #ffe600 !important;
+  transform: scale(1.18) !important;
+  -webkit-text-stroke: 0.35cqw #000000 !important;
+  filter: drop-shadow(0 0 1.5cqw rgba(255, 230, 0, 0.8));
+}

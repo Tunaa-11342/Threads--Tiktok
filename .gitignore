@@ -1,2 +1,9 @@
 node_modules/
 .work/
+.cache_tts/
+tts_cache/
+Xuất ra/
+.DS_Store
+*.DS_Store
+# Bỏ qua các file video nền lớn vượt giới hạn 100MB của GitHub
+Video nền/*Minecraft*.mp4

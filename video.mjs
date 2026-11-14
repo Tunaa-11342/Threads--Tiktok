@@ -1,14 +1,20 @@
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { copyFile, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mixAudio } from './audio.mjs';
 import { cardMarkup, gridMarkup, quotePages } from './public/thread-card.mjs';
 import { addOutroAnimation, outroDuration, outroMarkup } from './public/outro.mjs';
+import { captionsMarkup, addCaptionsAnimation } from './public/captions.mjs';
+import { ensureVoiceCache } from './voice-cache.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const python = process.env.VIENEU_PYTHON || 'E:\\24h\\AI MAKE VIDEO\\VieNeu-TTS\\.venv\\Scripts\\python.exe';
+const defaultPython = process.platform === 'darwin'
+  ? '/Volumes/Data/VieNeu-TTS/.venv/bin/python'
+  : 'E:\\24h\\AI MAKE VIDEO\\VieNeu-TTS\\.venv\\Scripts\\python.exe';
+const python = process.env.VIENEU_PYTHON || defaultPython;
 const hyperframes = path.join(root, 'node_modules', 'hyperframes', 'bin', 'hyperframes.mjs');
 const fps = 30;
 
@@ -49,8 +55,8 @@ export async function probe(file) {
   ]));
 }
 
-function composition(scenes, plan, hasBackground, style)  {
-  const { duration, mainDuration, outro } = plan;
+function composition(scenes, plan, hasBackground, style) {
+  const { duration, mainDuration, outro, captions } = plan;
   const timed = (start, length, track) => ' data-start="' + start + '" data-duration="' + length +
     '" data-track-index="' + track + '"';
   const cards = scenes.flatMap((scene, index) => {
@@ -61,68 +67,197 @@ function composition(scenes, plan, hasBackground, style)  {
       timed(scene.start + page * length, length, 2) + '>' +
       cardMarkup({ ...scene, quote }) + '</section>');
   });
+
+  const memes = scenes.map((scene, index) => {
+    if (!scene.meme?.file) return '';
+    const memePath = path.join(root, 'Memes', scene.meme.file);
+    if (!existsSync(memePath)) return '';
+    const rawScale = Number(scene.meme.scale) || 1;
+    const scale = rawScale > 10 ? rawScale / 100 : rawScale;
+    const isAfterRead = scene.meme.timing === 'after_read';
+    const opening = index === 0 ? plan.intro?.duration ?? 0 : 0;
+    const speechDur = scene.speechDur || Math.max(0.5, scene.duration - opening - (scene.reaction?.duration ?? 0));
+    const mStart = isAfterRead ? (scene.start + opening + speechDur) : scene.start;
+    const mDur = isAfterRead ? Math.max(0.4, scene.duration - (opening + speechDur)) : scene.duration;
+
+    const ext = path.extname(scene.meme.file).toLowerCase();
+    const isVideo = ['.mp4', '.webm', '.mov'].includes(ext);
+    if (isVideo) {
+      return '<video id="meme-' + index + '" class="clip thread-meme" style="--meme-x:' +
+        (scene.meme.x ?? 50) + '%;--meme-y:' + (scene.meme.y ?? 62) + '%;--meme-scale:' +
+        scale + ';--meme-rot:' + (scene.meme.rotation ?? 0) + 'deg;"' +
+        timed(mStart, mDur, 5) + ' src="' + scene.meme.file + '" muted playsinline autoplay loop></video>';
+    }
+
+    return '<div id="meme-' + index + '" class="clip thread-meme" style="--meme-x:' +
+      (scene.meme.x ?? 50) + '%;--meme-y:' + (scene.meme.y ?? 62) + '%;--meme-scale:' +
+      scale + ';--meme-rot:' + (scene.meme.rotation ?? 0) + 'deg;"' +
+      timed(mStart, mDur, 5) + '><img src="' + scene.meme.file + '" alt="meme"></div>';
+  }).filter(Boolean);
+
+  const shouldExtendBgForOutro = Boolean(outro && outro.blurBackground !== false);
+  const bgDuration = shouldExtendBgForOutro ? duration : mainDuration;
   const backdrop = hasBackground
-    ? '<video id="background" class="clip thread-backdrop" src="background.mp4"' + timed(0, mainDuration, 0) +
+    ? '<video id="background" class="clip thread-backdrop" src="background.mp4"' + timed(0, bgDuration, 0) +
       ' muted playsinline></video><div id="scrim" class="clip thread-backdrop thread-scrim"' +
       timed(0, mainDuration, 1) + '></div>'
     : gridMarkup;
 
-  const ending = outro ? outroMarkup(outro, {
+  const activeOutro = outro ? {
+    ...outro,
+    avatar: outro.avatar ? path.basename(outro.avatar) : 'lapzone-logo.svg',
+  } : null;
+  const ending = activeOutro ? outroMarkup(activeOutro, {
     timing: ' id="follow-outro"' + timed(mainDuration, duration - mainDuration, 4),
-    freeze: hasBackground ? 'freeze.jpg' : null,
+    blurBackground: Boolean(hasBackground && activeOutro.blurBackground !== false),
   }) : '';
-  const animation = outro ? '<script src="gsap.min.js"></script><script>' +
-    'const endingTimeline = gsap.timeline({ paused: true });(' + addOutroAnimation.toString() +
-    ')(endingTimeline,document.getElementById("follow-outro"),' + mainDuration + ');' +
-    'window.__timelines = {"threads-video": endingTimeline};</script>' : '';
+
+  const captionsHtml = captions?.enabled ? scenes.map((scene, index) => {
+    const opening = index === 0 ? plan.intro?.duration ?? 0 : 0;
+    const speechDur = scene.speechDur || Math.max(0.5, scene.duration - opening - (scene.reaction?.duration ?? 0));
+    return captionsMarkup(scene.read, speechDur, captions.wordsPerLine || 7, index, captions.y || 75, opening);
+  }).join('\n') : '';
+
+  const hasAnimation = Boolean(outro || captions?.enabled);
+  const animationScript = hasAnimation ? '<script src="gsap.min.js"></script><script>' +
+    'const masterTimeline = gsap.timeline({ paused: true });\n' +
+    (outro ? '(' + addOutroAnimation.toString() + ')(masterTimeline,document.getElementById("follow-outro"),' + mainDuration + ');\n' : '') +
+    (captions?.enabled ? 'const addCaptionsAnim = ' + addCaptionsAnimation.toString() + ';\n' +
+      'const sceneStarts = ' + JSON.stringify(scenes.map(s => s.start)) + ';\n' +
+      'document.querySelectorAll(".tiktok-captions-container").forEach((el, idx) => {\n' +
+      '  addCaptionsAnim(masterTimeline, el, sceneStarts[idx] || 0);\n' +
+      '});\n' : '') +
+    'window.__timelines = {"threads-video": masterTimeline};\n</script>' : '';
 
   return '<!doctype html><html lang="vi"><head><meta charset="UTF-8"><style>' +
     '*{box-sizing:border-box}body{margin:0;background:#050609}#stage{position:relative;width:1080px;height:1920px;overflow:hidden}' +
     style + '</style></head><body><main id="stage" class="thread-stage" data-composition-id="threads-video"' +
-    (outro ? ' ' : ' data-no-timeline ') +
+    (hasAnimation ? ' ' : ' data-no-timeline ') +
     'data-start="0" data-width="1080" data-height="1920" data-duration="' + duration + '">' +
-    backdrop + cards.join('\n') + ending +
+    backdrop + cards.join('\n') + memes.join('\n') + captionsHtml + ending +
     '<audio id="narration" class="clip" src="narration.wav"' + timed(0, duration, 3) + ' data-volume="1"></audio>' +
-    '</main>' + animation + '</body></html>';
+    '</main>' + animationScript + '</body></html>';
 }
 
-async function generateNarration(folder, scenes, { intro, reactions, outro }) {
-  await writeFile(path.join(folder, 'lines.json'), JSON.stringify(scenes.map(scene => scene.read)));
-  await command(python, ['-X', 'utf8', '-B', path.join(root, 'tts.py'), folder], {
-    cwd: path.resolve(path.dirname(python), '..', '..'),
-    timeout: 600_000,
-  });
-  const timings = JSON.parse(await readFile(path.join(folder, 'speech.json'), 'utf8'));
+async function generateNarration(folder, scenes, { intro, reactions, outro, captions, backgroundStart }) {
+  const cachedItems = await ensureVoiceCache(scenes.map(scene => scene.read), folder);
+  const timings = [];
+  let voiceName = 'Trúc Ly';
+  for (let index = 0; index < cachedItems.length; index++) {
+    const item = cachedItems[index];
+    await copyFile(item.wavFile, path.join(folder, `speech-${index}.wav`));
+    timings.push(item.duration);
+    if (item.voice) voiceName = item.voice;
+  }
+  await writeFile(path.join(folder, 'speech.json'), JSON.stringify(timings), 'utf8');
+  await writeFile(path.join(folder, 'voice.txt'), voiceName, 'utf8');
+
   let elapsed = 0;
-  const timeline = timings.map((speechDuration, index) => {
+  const timeline = [];
+  for (let index = 0; index < timings.length; index++) {
+    const speechDuration = timings[index];
     if (!(speechDuration > 0)) throw new Error('VieNeu-TTS trả về đoạn âm thanh rỗng.');
     const opening = index === 0 ? intro?.duration ?? 0 : 0;
     const reaction = reactions[index];
-    const scene = { start: elapsed, duration: speechDuration + opening + (reaction?.duration ?? 0), reaction };
-    elapsed += scene.duration;
-    return scene;
-  });
+    const reactionDuration = reaction?.duration ?? 0;
+
+    let memeHold = 0;
+    const meme = scenes[index]?.meme;
+    if (meme?.file) {
+      const ext = path.extname(meme.file).toLowerCase();
+      const isVideo = ['.mp4', '.webm', '.mov'].includes(ext);
+      let memeDur = Number(meme.duration) || 0;
+      if (!memeDur && isVideo) {
+        try {
+          const meta = await probe(path.join(root, 'Memes', meme.file));
+          memeDur = Number(meta.format?.duration) || 0;
+        } catch {}
+      }
+      if (meme.timing === 'after_read') {
+        memeHold = memeDur > 0 ? memeDur : (reactionDuration > 0 ? reactionDuration : 1.5);
+      } else {
+        if (memeDur > speechDuration) {
+          memeHold = memeDur - speechDuration;
+        }
+      }
+    }
+
+    const extraHold = Math.max(reactionDuration, memeHold);
+    const sceneDur = speechDuration + opening + extraHold;
+    const scene = { start: elapsed, duration: sceneDur, reaction, speechDur: speechDuration, extraHold };
+    elapsed += sceneDur;
+    timeline.push(scene);
+  }
   const duration = Math.ceil((elapsed + (outro ? outroDuration : 0)) * fps) / fps;
   if (!outro) timeline.at(-1).duration += duration - elapsed;
-  return { duration, mainDuration: outro ? elapsed : duration, scenes: timeline, intro, outro };
+  return { duration, mainDuration: outro ? elapsed : duration, scenes: timeline, intro, outro, captions, backgroundStart: backgroundStart || 0 };
 }
 
 async function prepareMedia(folder, background, scenes, plan, music) {
   await mixAudio(folder, plan, music, command);
   const ffmpeg = ['-nostdin', '-hide_banner', '-loglevel', 'error', '-y'];
 
-  if (background) await command('ffmpeg', [...ffmpeg, '-stream_loop', '-1', '-i', background, '-map', '0:v:0', '-an',
-    '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase:force_divisible_by=2:reset_sar=1,crop=1080:1920,fps=30',
-    '-t', String(plan.mainDuration), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19',
-    '-pix_fmt', 'yuv420p', '-g', '30', '-movflags', '+faststart', 'background.mp4'], { cwd: folder, timeout: 300_000 });
+  if (background) {
+    const bgStart = Number(plan.backgroundStart) || 0;
+    const shouldExtendBgForOutro = Boolean(plan.outro && plan.outro.blurBackground !== false);
+    const bgRenderDur = shouldExtendBgForOutro ? plan.duration : plan.mainDuration;
+
+    await command('ffmpeg', [...ffmpeg, '-ss', String(bgStart), '-stream_loop', '-1', '-i', background, '-map', '0:v:0', '-an',
+      '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase:force_divisible_by=2:reset_sar=1,crop=1080:1920,fps=30',
+      '-t', String(bgRenderDur), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19',
+      '-pix_fmt', 'yuv420p', '-g', '30', '-movflags', '+faststart', 'background.mp4'], { cwd: folder, timeout: 300_000 });
+  }
+
+  // Copy any meme images to folder
+  for (const scene of scenes) {
+    if (scene.meme?.file) {
+      const memePath = path.join(root, 'Memes', scene.meme.file);
+      if (existsSync(memePath)) {
+        await copyFile(memePath, path.join(folder, scene.meme.file));
+      }
+    }
+  }
 
   let style = await readFile(path.join(root, 'public', 'thread-card.css'), 'utf8');
+
+  // Copy fonts if captions enabled
+  if (plan.captions?.enabled) {
+    const defaultFontBlack = path.join(root, 'public', 'fonts', 'BeVietnamPro-Black.ttf');
+    const defaultFontBold = path.join(root, 'public', 'fonts', 'BeVietnamPro-Bold.ttf');
+    if (existsSync(defaultFontBlack)) await copyFile(defaultFontBlack, path.join(folder, 'BeVietnamPro-Black.ttf')).catch(() => {});
+    if (existsSync(defaultFontBold)) await copyFile(defaultFontBold, path.join(folder, 'BeVietnamPro-Bold.ttf')).catch(() => {});
+
+    if (plan.captions.font && plan.captions.font !== 'Be Vietnam Pro') {
+      const customFontFiles = await readdir(path.join(root, 'Fonts')).catch(() => []);
+      const matched = customFontFiles.find(f => path.basename(f, path.extname(f)).toLowerCase() === plan.captions.font.toLowerCase());
+      if (matched) {
+        await copyFile(path.join(root, 'Fonts', matched), path.join(folder, matched)).catch(() => {});
+        style += `\n@font-face { font-family: '${plan.captions.font}'; src: url('${matched}'); }\n.tiktok-caption-line { font-family: '${plan.captions.font}', 'Be Vietnam Pro', sans-serif !important; }`;
+      }
+    }
+  }
+
+  const needsGsap = Boolean(plan.outro || plan.captions?.enabled);
+  if (needsGsap) {
+    await copyFile(path.join(root, 'node_modules', 'gsap', 'dist', 'gsap.min.js'), path.join(folder, 'gsap.min.js'));
+  }
   if (plan.outro) {
-    const assets = [
-      copyFile(path.join(root, 'node_modules', 'gsap', 'dist', 'gsap.min.js'), path.join(folder, 'gsap.min.js')),
-      copyFile(path.join(root, 'public', 'lapzone-logo.svg'), path.join(folder, 'lapzone-logo.svg')),
-    ];
-    if (background) {
+    const avatarFile = plan.outro.avatar ? path.basename(plan.outro.avatar) : 'lapzone-logo.svg';
+    const assets = [];
+    if (avatarFile === 'lapzone-logo.svg') {
+      assets.push(copyFile(path.join(root, 'public', 'lapzone-logo.svg'), path.join(folder, 'lapzone-logo.svg')));
+    } else {
+      const avatarPath = path.join(root, 'Avatars', avatarFile);
+      if (existsSync(avatarPath)) {
+        assets.push(copyFile(avatarPath, path.join(folder, avatarFile)));
+      } else if (existsSync(path.join(root, 'public', avatarFile))) {
+        assets.push(copyFile(path.join(root, 'public', avatarFile), path.join(folder, avatarFile)));
+      } else {
+        assets.push(copyFile(path.join(root, 'public', 'lapzone-logo.svg'), path.join(folder, 'lapzone-logo.svg')));
+      }
+    }
+    const shouldExtendBgForOutro = Boolean(plan.outro && plan.outro.blurBackground !== false);
+    if (background && !shouldExtendBgForOutro) {
       assets.push(command('ffmpeg', [...ffmpeg, '-sseof', '-0.16', '-i', 'background.mp4',
         '-vf', 'reverse', '-frames:v', '1', '-q:v', '2', '-update', '1', 'freeze.jpg'], { cwd: folder }));
     }
@@ -148,7 +283,7 @@ export async function renderVideo(folder, background, scenes, audioOptions, upda
   update({ status: 'render', duration, progress: 0 });
   await rm(path.join(folder, 'preview.mp4'), { force: true });
   await command(process.execPath, [hyperframes, 'render', '.', '--output', 'preview.mp4', '--fps',
-    String(fps), '--workers', '2', '--quality', 'standard', '--strict'], {
+    String(fps), '--workers', '2', '--quality', 'standard'], {
     cwd: folder, timeout: 900_000, onProgress: progress => update({ progress }),
   });
   const metadata = await probe(path.join(folder, 'preview.mp4'));
