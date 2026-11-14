@@ -136,3 +136,15 @@ Hệ thống quản lý tài nguyên được bố trí trực quan trong tab **
 - **Đệm âm thanh (Audio Silence Padding) chống lệch nhịp**:
   - Khi thời lượng hình ảnh được kéo dài để chờ video meme, hệ thống tự động sinh file âm thanh tĩnh (`hold-${index}.wav`) tương ứng và ghép vào luồng âm thanh chính qua FFmpeg `concat`.
   - Giúp loại bỏ hoàn toàn hiện tượng giọng đọc của cảnh sau phát sớm đè lên cảnh trước khi render video hoàn chỉnh.
+
+---
+
+## 13. Đóng Gói Trực Tiếp Thư Viện Tĩnh & Tự Động Hóa Khởi Chạy
+- **Đóng gói trực tiếp `public/lucide.min.js` và `public/gsap.min.js`**:
+  - Loại bỏ hoàn toàn sự phụ thuộc vào `node_modules` khi nạp icon và hoạt ảnh cho giao diện web.
+  - Người dùng tải mã nguồn về có thể mở giao diện ngay với đầy đủ icon sắc nét mà không sợ lỗi 404 hoặc thiếu thư viện.
+- **Nâng cấp kịch bản chạy tự động (`Chay-tool.cmd` & `Chay-tool.command`)**:
+  - Tự động phát hiện và cài đặt các package bổ sung (`npm install`) nếu máy người dùng chưa có hoặc thiếu package mới (`lucide`).
+  - Hỗ trợ mượt mà trên cả Windows và macOS.
+- **Tối ưu hóa hiển thị thanh công cụ cảnh (`scene-rail`)**:
+  - Căn chỉnh tỷ lệ font chữ và icon của các nút "Mở đầu", "Thân", "Kết" nhỏ gọn, thanh thoát và cân đối.
